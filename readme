@@ -21,8 +21,30 @@ issue before then.
 
 See also the changes file.
 
---
-Rich Bowen
-rbowen@rcbowen.com
-Nov 28, 1998
+DESCRIPTION
+
+Conference Rooms is a CGI application that allows scheduling
+of conference rooms, or other resources, from your web 
+browser. One day I got sick of walking to the receptionist's
+desk to schedule a conference room, so I wrote this, and 
+got rid of her book.
+
+DEPENDENCIES
+
+This code uses the Time::* modules distributed under the
+name "Time-modules". This package contains JulianDate, 
+DateParse, CTime, and a variety of others, and is available
+from CPAN in modules/by-module/Time/
+
+You also should have a web server, and access to your CGI
+directory. See install.html for installation instructions.
+
+---------------------------
+
+Copyright 1996-1998 Rich Bowen, All Rights Reserved
+
+This code is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+Rich <rbowen@rcbowen.com>
 

@@ -1,3 +1,7 @@
+Version 3.11 - Nov 30, 1998
+Minor bug fix. Conflicts were not being caught when
+editing reservations.
+
 Version 3.10 Nov 28, 1998
 Split "user" and "admin" functions so that people.
 can restrict who has access to the add, edit, and

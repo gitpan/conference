@@ -292,6 +292,7 @@ sub Update	{
 	@reservations=grep !/^$form->{id}~/ , @reservations; # Get rid of the old version
 
 	$conflict=0;
+	$day = julian_day($form->{year}, $form->{month}, $form->{day});
 
 	#  Only need to check against today's reservations
 	@todays_res = grep /~$day$/, @reservations;
@@ -328,8 +329,6 @@ sub Update	{
 		#  Take carriage returns out of the description field
 		$form->{description} =~ s/[\n\r]/<br>/g;
 		$form->{description} =~ s/<br><br>/<p>/g;
-
-		$day = julian_day($form->{year}, $form->{month}, $form->{day});
 
 		open (DATAFILE, ">>$datafile");
 
