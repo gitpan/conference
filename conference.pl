@@ -15,7 +15,7 @@
 $datafile="reservations";
 $version="0.1";
 $base_url="/cgi-bin/Internal";
-@links=("/index.html~~DataBeam Homepage","/Internal/~~Internal Homepage");
+@links=("http://www.databeam.com/~~DataBeam Homepage","/~~Internal Homepage","/cgi-bin/hypercal/hypercal~~Events Calendar");
 
 print "content-type: text/html \n\n";
 $num_rooms=$#rooms;
@@ -88,14 +88,18 @@ for ($time=0;$time<=$num_times;$time++)	{
 print "<tr>\n";
 print "<td align=middle>@times[$time]";
 	for ($room=0;$room<=$num_rooms;$room++)  {
-	print "<td align=middle>";
+	$reserve=0;
 	#  Print reservations for that room, that hour
 	for $reservation (@reservations){
-# print $reservation;
 	($id,$title,$start,$end,$name,$con_room,$descrip,$con_time,$con_month,$con_day,$con_year)=split(/~~/,$reservation);
 	if ($time==$con_time && $room==$con_room && $mon==$con_month && $mday==$con_day && $year==$con_year)
-		{print "<a href=\"$base_url/conference.pl?details&$id\">$title</a>";}  #  Endif ... phew!!
+		{$reserve=1;
+		if ($con_time==$start)	{
+		$duration=($end-$start);
+		print "<td align=middle rowspan=$duration>";
+		print "<a href=\"$base_url/conference.pl?details&$id\">$title</a>";}}
 		};  #  End for reservation
+		if ($reserve==0){print"<td>"};
 				}
 }
 
@@ -512,7 +516,7 @@ print "<hr>";
 $passed="yes";
 #  First, make sure that all the fields are filled in ...
 for $key (keys %FORM)	{
-if ($FORM{$key} eq ""){$error.="<li>You need to enter a value for $key.";
+if ($FORM{$key} eq "" && $key ne "email" && $key ne "descrip"){$error.="<li>You need to enter a value for $key.";
 			$passed="no";	} # end if
 } # end for $key
 
