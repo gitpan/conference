@@ -1,0 +1,28 @@
+<html>
+<head>
+<title>Reserve a room - %%%today_text%%%</title>
+</head>
+<body bgcolor="White" text="Black" link="Blue" vlink="Green" alink="Red">
+<h3>Reserve a room - %%%today_text%%%</h3>
+<form action="%%%script_name%%%" method="post">
+<input type="hidden" name="action" value="Add">
+<table>
+<tr><td align="right">
+Room:</td> <td align="left"><select name="room">%%%select_room%%%</select></td></tr>
+<tr><td align="right">Date:</td><td align="left"><select name="month">%%%months%%%</select> <input name="day" size="3" maxlength="2" value="%%%day%%%"> <input name="year" size="5" maxlength="4" value="%%%year%%%"></td></tr>
+<tr><td align="right">Start time</td><td align="left"><select name="start">%%%select_time%%%</select></td></tr>
+<tr><td align="right">End time</td><td align="left"><select name="end">%%%select_time%%%</select></td></tr>
+<tr><td align="right">Meeting name:</td>
+<td align="left"><input name="title" size="25"></td></tr>
+<tr><td align="right" valign="top">Description:</td><td align="left">
+<textarea name="description" rows="4" cols="35" wrap="virtual"></textarea></td></tr>
+<tr><td align="right">Contact name:</td><td align="left">
+<input name="name" size="25"></td></tr>
+<tr><td align="right">Contact email</td><td align="left"><input name="email" size="25"></td></tr>
+
+<tr><td colspan="2"><input type="submit" value="Make reservation"></td></tr>
+
+</table>
+</form>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<html>
+<head>
+<title>Are you sure?</title>
+</head>
+<body bgcolor="White" text="Black" link="Blue" vlink="Teal" alink="Red">
+<b>Are you sure you want to delete <i>%%%title%%%</i></b>?
+<p>
+<table border=0>
+<tr><td>
+<form action="%%%script_name%%%" method="post">
+<input type="hidden" name="id" value="%%%id%%%">
+<input type="hidden" name="action" value="Confirm">
+<input type="submit" value="Yes">
+</form></td><td>
+<form action="%%%script_name%%%" method="post">
+<input type="hidden" name="id" value="%%%id%%%">
+<input type="hidden" name="action" value="Details">
+<input type="submit" value="No">
+</form></td></tr>
+</table></body>
+</html>
