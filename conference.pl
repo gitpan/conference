@@ -266,7 +266,7 @@ foreach $reservation (@reservations)	{
 #  it is a "short circuit" manner - that is, quitting when the
 #  first mismatch occurs.
 
-if ($room==$FORM{'room'} && $month==$FORM{'month'} && $day==$FORM{'day'} && $year==$FORM{'year'} && ( ($FORM{'start'}>=$start && $FORM{'start'}<=$end) || ($FORM{'end'}>=$start && $FORM{'end'}<=$end) ) ) {$conflict="yes"};	}
+if ($room==$FORM{'room'} && $month==$FORM{'month'} && $day==$FORM{'day'} && $year==$FORM{'year'} && ( ($FORM{'start'}>=$start && $FORM{'start'}<$end) || ($FORM{'end'}>$start && $FORM{'end'}<=$end) ) ) {$conflict="yes"};	}
 
 if ($conflict eq "yes")	{
 		$error.="<li>There is a conflict with another meeting.";
@@ -531,7 +531,7 @@ close DATAFILE;
 $conflict="no";
 foreach $reservation (@reservations)	{
 ($conf_id,$title,$start,$end,$name,$room,$descrip,$month,$day,$year)=split(/~~/,$reservation);
-if ($room==$FORM{'room'} && $month==$FORM{'month'} && $day==$FORM{'day'} && $year==$FORM{'year'} && ( ($FORM{'start'}>=$start && $FORM{'start'}<=$end) || ($FORM{'end'}>=$start && $FORM{'end'}<=$end))) {$conflict="yes"}; # end if
+if ($room==$FORM{'room'} && $month==$FORM{'month'} && $day==$FORM{'day'} && $year==$FORM{'year'} && ( ($FORM{'start'}>=$start && $FORM{'start'}<$end) || ($FORM{'end'}>$start && $FORM{'end'}<=$end))) {$conflict="yes"}; # end if
 	}  # end foreach
 if ($conflict eq "yes")	{
 		$error.="<li>There is a conflict with another meeting.";
