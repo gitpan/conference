@@ -1,0 +1,11 @@
+This is a script that will allow you to reserve conference rooms on your
+intranet.  You can put in a list of conference rooms, and a list of
+valid times, and the script will (should) do the rest.  I wrote this
+yesterday afternoon, so if it does not work properly, expect updates
+for a little while.
+
+Let me know if you use this,
+
+Rich Bowen
+rbowen@databeam.com
+http://www.databeam.com/
