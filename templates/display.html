@@ -11,7 +11,23 @@
 <a href="%%%reserve_link%%%">Reserve a room</a> |
 <a href="%%%script_name%%%?action=Display&today=%%%yesterday%%%">Previous day</a> |
 <a href="%%%script_name%%%?action=Display&today=%%%tomorrow%%%">Next day</a>
-]
+]<br>
+<table>
+<tr>
+<td><form action="%%%script_name%%%">
+<input name="action" value="Jump" type=hidden>
+<input type="submit" value="Jump To">
+</td>
+<td>
+<select name="month">%%%months%%%</select>
+</td>
+<td><input name="day" size=3 maxlength=2 value="%%%day%%%">
+</td>
+<td>
+<input name="year" size=5 maxlength=4 value="%%%year%%%">
+</td>
+</tr>
+</table>
 
 <p>
 <h3>%%%today_text%%%</h3>

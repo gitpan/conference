@@ -1,0 +1,28 @@
+Conference Rooms
+----------------
+
+Conference Rooms is not a module, but is a web-based
+(CGI) application. How you install it is going
+to depend on what HTTP server you are running,
+where you want the thing to live, and what 
+OS you are running on.
+
+There are more complete instructions in the readme.html
+and install.html files included with this distribution.
+They are in HTML format because I simply skeetched them
+from my web site. For more complete, and perhaps more
+up-to-date information, you may wish to look there,
+at http://www.rcbowen.com/products/conference/ .
+
+"Conference Rooms" does not have any problem handling 
+dates occurring after January 1, 2000, but it may run
+into some problems after 2038. I expect to resolve that
+issue before then.
+
+See also the changes file.
+
+--
+Rich Bowen
+rbowen@rcbowen.com
+Nov 28, 1998
+

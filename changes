@@ -1,0 +1,19 @@
+Version 3.10 Nov 28, 1998
+Split "user" and "admin" functions so that people.
+can restrict who has access to the add, edit, and
+delete functions.
+Added "Jump to date" feature.
+Stored user's Name and Email address in a cookie, 
+so that they do not have to be re-entered each time 
+the user adds a reservation. This is a configurable
+option in the Conference.pm file.
+Added file locking to prevent some of the file
+corruption problems that busy sites were seeing.
+Some code cleanup.
+
+Version 3.01 and 3.02
+Minor bug fixes
+
+Version 3.0
+Complete rewrite from previous version
+

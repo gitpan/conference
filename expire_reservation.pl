@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+use lib '/home/rbowen/public_html/scripts/conference/';
 use Conference;
 use Time::JulianDay;
 use strict 'vars';

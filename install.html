@@ -1,0 +1,54 @@
+<html>
+<head>
+<title>Installing Conference Rooms</title>
+</head>
+<body bgcolor="White" text="Black" link="Blue" vlink="Green" alink="Red">
+[
+<a href="readme.html">readme.html</a>
+]
+
+<h3>Installing Conference Rooms</h3>
+
+<a href="#permissions"><b>File permissions</b></a><br>
+<a href="#password"><b>Restricting who can reserve rooms</b></a><p>
+
+There are several steps to getting <i>Conference Rooms</i> installed on your server, so please read carefully, and be patient:
+
+<ol>
+<li>Get the latest version of Conference Rooms, which will always be available from the <a href="http://www.rcbowen.com/products/conference/">Conference Rooms homepage.</a>
+<li>Get the necessary Perl modules, listed in the <a href="readme.html">readme.html file</a>, and install them.<br>
+If you are installing this under Windows NT, and are unfortunate enough to be running IIS, it may be easiest to also move Conference.pm into the /perl/lib directory (wherever you have Perl installed), since <a href="http://www.rcbowen.com/perl_cwd_iis.html">IIS has a strange definition of "current directory"</a>.
+<li>Open Conference.pm in a text editor, and edit the values that appear above the fist subroutine. These will be such things as the names of your conference rooms, the range of times that you want your schedule to span, and the location of your cgi directory on your server. Save your changes.
+<li>If you desire, you can modify any of the template HTML files appearing the the "templates" directory. Notice that there are variables in those files which look like %%%variable%%%. Don't mess with those, as those are the values that the CGI scripts fill in at run time. If you are going to play with the HTML files, make sure you save a backup copy, at least until you get the concept.
+</ol>
+
+You should be ready to start now. Point your browser at http://your.server/cgi-bin/conference/conference.cgi and enjoy.<p>
+To delete old events, just run the expire_reservations script occasionally, such as with a cron process. It may complain about being unable to find Conference.pm, depending on how "current directory" is defined by your cron process. If that happens, add a line above <p>
+<b><i>use Conference;</i></b>
+<p>
+that looks like <p>
+<b><i>use lib '/path/to/your/cgi/directory/conference';</i></b><p>
+and that will usually resolve the problem.<p>
+<p>
+
+<a name="permissions"><h3>File permissions</h3></a>
+
+People frequently have trouble with file permissions, so here's what you have to do. Remember that this is a database application, of sorts, so the scripts have to have write access to the "database" files. Those files are <code>reservations</code>, <code>reservations.lock</code>, <code>reserve_id,</code> and <code>reserve_id.lock</code>. Since on most servers the CGI processes run with no permissions, this means that you have to allow everyone to write to those files. On a Unix system, this means <code>chmod a+w filename</code>, and on NT, this means "Everyone, full control". If this concerns you a lot, you might want to move those files outside of the web root directory, so that nobody can retrieve those files with a browser. Just modify the location of the files in Conference.pm by putting a full path in the variable name. For example:<br>
+<pre>
+$datafile  = '/home/foobar/securefiles/reservations';
+</pre>
+Or
+<pre>
+$datafile  = 'c:/securefiles/reservations';
+</pre>
+
+<a name="password"><h3>Restricting who can add events</h3></a>
+
+One of the more frequently requested features in past versions was the ability to restrict who can reserve rooms. In this version, I have split the "user" and "admin" functionality into two files. This means, on web servers that support such a concept, that you can password protect the <b>admin.cgi</b> file, so that only those persons with permission to do so can add, edit, and remove reservations. You will need to consult the documentation on your particular web server to see how to do this. A large variety of servers support this behavior, including the big three - Apache, IIS, and Netscape servers. If in doubt, just install <a href="http://www.apache.org/">Apache</a>.<p>
+
+[
+<a href="readme.html">readme.html</a>
+]
+
+</body>
+</html>

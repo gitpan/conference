@@ -4,7 +4,7 @@
 </head>
 <body bgcolor="White" text="Black" link="Blue" vlink="Green" alink="Red">
 <h3>Reserve a room - %%%today_text%%%</h3>
-<form action="%%%script_name%%%" method="post">
+<form action="%%%form_action%%%" method="post">
 <input type="hidden" name="action" value="Add">
 <table>
 <tr><td align="right">
@@ -17,8 +17,9 @@ Room:</td> <td align="left"><select name="room">%%%select_room%%%</select></td><
 <tr><td align="right" valign="top">Description:</td><td align="left">
 <textarea name="description" rows="4" cols="35" wrap="virtual"></textarea></td></tr>
 <tr><td align="right">Contact name:</td><td align="left">
-<input name="name" size="25"></td></tr>
-<tr><td align="right">Contact email</td><td align="left"><input name="email" size="25"></td></tr>
+<input name="name" size="25" value="%%%name%%%"></td></tr>
+<tr><td align="right">Contact email</td>
+<td align="left"><input name="email" size="25" value="%%%email%%%"></td></tr>
 
 <tr><td colspan="2"><input type="submit" value="Make reservation"></td></tr>
 
