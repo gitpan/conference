@@ -1,19 +1,33 @@
-#!/usr/bin/perl
+#!/usr/bin/perl 
 #
 #	Reserve a conference room
 #	Rich Bowen
 #	rbowen@databeam.com
 #	http://www.databeam.com/
+#	########################################
+#	This script keeps a database of room reservations
+#	for a given set of rooms.  It is written in Perl 5 and 
+#	should run on any system running Perl 5.
+#
+#	The database has a tendency to grow large, and you should
+#	Run the expire_reservations script regularly - daily with
+#	a cron job, if possible.
 #	
+#	These scripts written by Rich Bowen, rbowen@rcbowen.com
+#
+
+#	Make sure that the following variables are set properly, or
+#	nothing will work
 
 #	variables
 #	these should be settable to whatever you want
 
-@rooms=("Engineering conference room","Marketing conference room","Boardroom","Upstairs conference room");
+@rooms=("Engineering conference room","Marketing conference room","Boardroom","Upstairs conference room","Demo neT.120 server");
 @times=("7:00","7:30","8:00","8:30","9:00","9:30","10:00","10:30","11:00","11:30","Noon","12:30","1:00","1:30","2:00","2:30","3:00","3:30","4:00","4:30","5:00","5:30","6:00");
 #  once you set this, @times should forever thereafter keep the same number of elements.
 $datafile="reservations";
-$version="0.1";
+$script="conference.pl";
+$version="2.1";
 $base_url="/cgi-bin/Internal";
 @links=("http://www.databeam.com/~~DataBeam Homepage","/~~Internal Homepage","/cgi-bin/hypercal/hypercal~~Events Calendar");
 
@@ -24,19 +38,12 @@ $num_times=$#times;
 # Grab the arguments
 $args=$ENV{'QUERY_STRING'};
 ($command,$other)=split(/&/,$args);
+if ($command eq "") {$command="display"};
 
 #  Determine which subroutine we are calling
 if ($ENV{'PATH_INFO'}=~/goto/) {&goto}
 else	{
-if ($command eq "delete")	{&delete}
-elsif ($command eq "delete2") {&delete2}
-elsif ($command eq "details") {&details}
-elsif ($command eq "edit") {&edit}
-elsif ($command eq "edit2") {&edit2}
-elsif ($command eq "edit3") {&edit3}
-elsif ($command eq "reserve") {&reserve}
-elsif ($command eq "reserve2") {&reserve2}
-else	{&display};
+&$command;  # This aught to eliminate some complexity
 }
 
 sub display	{
@@ -61,13 +68,13 @@ print <<ENDHTML1;
 <body bgcolor=#FFFFFF>
 <h3>Conference Room Reservations - $weekday, $month_txt $mday, $year</h3>
 <center>
-[ <a href="$base_url/conference.pl?reserve&$mon\_$mday\_$year">Reserve a room</a> | <a href="$base_url/conference.pl?delete&$mon\_$mday\_$year">Delete a reservation</a> | <a href="$base_url/conference.pl?edit&$mon\_$mday\_$year">Edit a reservation</a> ]
+[ <a href="$base_url/$script?reserve&$mon\_$mday\_$year">Reserve a room</a> | <a href="$base_url/$script?delete&$mon\_$mday\_$year">Delete a reservation</a> | <a href="$base_url/$script?edit&$mon\_$mday\_$year">Edit a reservation</a> ]
 </center>
 <center>
-<form method=get action=conference.pl/goto>
+<form method=get action=$script/goto>
 <input type=submit value="Jump"> to <input name="mon" size=2 value="$mon"> / <input name="day" size=2 value="$mday"> / <input name="year" size=4 value="$year">
 </form>
-[ <a href="$base_url/conference.pl?display&$y_mon\_$y_day\_$y_year">Previous day</a> | <a href="$base_url/conference.pl">Today</a> | <a href="$base_url/conference.pl?display&$t_mon\_$t_day\_$t_year">Next day</a> ]
+[ <a href="$base_url/$script?display&$y_mon\_$y_day\_$y_year">Previous day</a> | <a href="$base_url/$script">Today</a> | <a href="$base_url/$script?display&$t_mon\_$t_day\_$t_year">Next day</a> ]
 </center>
 <hr>
 <table border width=100%>
@@ -80,24 +87,26 @@ close DATAFILE;
 #  Print table headers
 print "<tr>";
 
-print "<th>Time";
+print "<th bgcolor=\"DD519D\">Time";
 for $room (@rooms)	{
-print "<th>$room";	}
+print "<th bgcolor=\"519DDD\">$room";	}
 
 for ($time=0;$time<=$num_times;$time++)	{
 print "<tr>\n";
-print "<td align=middle>@times[$time]";
+print "<td align=middle bgcolor=\"519DDD\">@times[$time]";
 	for ($room=0;$room<=$num_rooms;$room++)  {
 	$reserve=0;
 	#  Print reservations for that room, that hour
 	for $reservation (@reservations){
-	($id,$title,$start,$end,$name,$con_room,$descrip,$con_time,$con_month,$con_day,$con_year)=split(/~~/,$reservation);
-	if ($time==$con_time && $room==$con_room && $mon==$con_month && $mday==$con_day && $year==$con_year)
+	($id,$title,$start,$end,$name,$con_room,$descrip,$con_month,$con_day,$con_year)=split(/~~/,$reservation);
+	if ($time>=$start && $time<=$end && $room==$con_room && $mon==$con_month && $mday==$con_day && $year==$con_year)
 		{$reserve=1;
-		if ($con_time==$start)	{
+		if ($time==$start)	{
 		$duration=($end-$start);
-		print "<td align=middle rowspan=$duration>";
-		print "<a href=\"$base_url/conference.pl?details&$id\">$title</a>";}}
+		print "<td align=middle rowspan=$duration bgcolor=\"EEEEEE\">";
+		print "<a href=\"$base_url/$script?details&$id\">$title</a>";
+		last;
+		}}
 		};  #  End for reservation
 		if ($reserve==0){print"<td>"};
 				}
@@ -117,22 +126,17 @@ sub details	{
 #  Display details on a particular conference reservation
 $id_num=$other;
 
+$reserveline = '';
 open (DATAFILE, $datafile);
-@reservations=<DATAFILE>;
-close DATAFILE;
+while (<DATAFILE>) {
+   if ( /^$id_num/o ) {
+	$reserveline = $_;
+	last;
+   }
+}
 
+($id,$title,$start,$end,$contact,$con_room,$descrip,$con_month,$con_day,$con_year)=split(/~~/,$reserveline);
 
-@reservations=grep(/^$id_num~/,@reservations);
-
-# $index=0;
-# repeat {
-# $index++;
-# ($id,$title,$start,$end,$name,$con_room,$descrip,$con_time,$con_month,$con_day,$con_year)=split(/~~/,@reservations[$index]);
-# }
- # until ($id == $id_num);
-# 
-($id,$title,$start,$end,$contact,$con_room,$descrip,$con_time,$con_month,$con_day,$con_year)=split(/~~/,@reservations[0]);
-# I had to do that again because stuff done in the loop is lost
 &month_txt($con_month);
 ($name,$email)=split(/&&/,$contact);
 $mon=$con_month;$mday=$con_day;$year=$con_year;&weekday;
@@ -160,7 +164,7 @@ print " for more details.<br>";
 print <<ENDFOOTER;
 <hr>
 <center>
-[ <a href="$base_url/conference.pl?display&$con_month\_$con_day\_$con_year">Back</a> to the schedule | <a href="$base_url/conference.pl?edit&$mon\_$mday\_$year">Edit a reservation</a> ]<br>
+[ <a href="$base_url/$script?display&$con_month\_$con_day\_$con_year">Back</a> to the schedule | <a href="$base_url/$script?edit&$mon\_$mday\_$year">Edit a reservation</a> ]<br>
 ENDFOOTER
 &toolbar;
 print "</body></html>\n";
@@ -180,7 +184,7 @@ print <<ENDHTML3;
 <h3>Reserve a room</h3>
 Please fill out the information below thoroughly.<br>
 <hr>
-<form method=post action=conference.pl?reserve2>
+<form method=post action=$script?reserve2>
 <b>Title of meeting</b>: 
 <input size=35 name="title"><br>
 This will be visible on the schedule, so make it short and descriptive (<i>customer training</i>, <i>IMTC conf. call</i>, <i>neT.120 design meeting</i>, etc)
@@ -256,11 +260,19 @@ close DATAFILE;
 
 $conflict="no";
 foreach $reservation (@reservations)	{
-($conf_id,$title,$start,$end,$name,$room,$descrip,$time,$month,$day,$year)=split(/~~/,$reservation);
-if ($room==$FORM{'room'} && $month==$FORM{'month'} && $day==$FORM{'day'} && $year==$FORM{'year'} && $time==$FORM{'start'}) {$conflict="yes"};	}
+($conf_id,$title,$start,$end,$name,$room,$descrip,$month,$day,$year)=split(/~~/,$reservation);
+
+#  This is a very complicated if statement, but Perl evaluates
+#  it is a "short circuit" manner - that is, quitting when the
+#  first mismatch occurs.
+
+if ($room==$FORM{'room'} && $month==$FORM{'month'} && $day==$FORM{'day'} && $year==$FORM{'year'} && ( ($FORM{'start'}>=$start && $FORM{'start'}<=$end) || ($FORM{'end'}>=$start && $FORM{'end'}<=$end) ) ) {$conflict="yes"};	}
+
 if ($conflict eq "yes")	{
 		$error.="<li>There is a conflict with another meeting.";
-		$passed="no"}
+		$passed="no";
+		# last; # Hop out of the for loop - one conflict is sufficient.
+		}
 
 # Then, if it passed, put the stuff in the file
 if ($passed eq "yes")	{
@@ -271,12 +283,12 @@ $FORM{'descrip'}=~s/\r//g;
 
 open (DATAFILE, ">>$datafile");
 
-for ($time=$FORM{'start'};$time<$FORM{'end'};$time++)	{
+# for ($time=$FORM{'start'};$time<$FORM{'end'};$time++)	{
 # Make reservation string
-$reservation="$id~~$FORM{'title'}~~$FORM{'start'}~~$FORM{'end'}~~$FORM{'name'}&&$FORM{'email'}~~$FORM{'room'}~~$FORM{'descrip'}~~$time~~$FORM{'month'}~~$FORM{'day'}~~$FORM{'year'}";
+$reservation="$id~~$FORM{'title'}~~$FORM{'start'}~~$FORM{'end'}~~$FORM{'name'}&&$FORM{'email'}~~$FORM{'room'}~~$FORM{'descrip'}~~$FORM{'month'}~~$FORM{'day'}~~$FORM{'year'}";
 
 print DATAFILE "$reservation\n";
-	}	#  end for $time
+#	 }	#  end for $time
 close DATAFILE;
 
 # Then print an HTML confirmation
@@ -295,7 +307,7 @@ $weekday, $month_txt $mday, $FORM{'year'}<br>
 <blockquote>$FORM{'descrip'}</blockquote><br>
 Contact <a href="mailto:$FORM{'email'}">$FORM{'name'}</a> for more details.<br>
 <hr>
-<center><a href="$base_url/conference.pl?display&$mon\_$mday\_$FORM{'year'}">Schedule for $weekday, $month_txt $mday, $FORM{'year'}</a></center><br>
+<center><a href="$base_url/$script?display&$mon\_$mday\_$FORM{'year'}">Schedule for $weekday, $month_txt $mday, $FORM{'year'}</a></center><br>
 ENDHTML4
 &toolbar;
 print"</body></html>\n";
@@ -312,7 +324,7 @@ The error(s) follow:<br>
 <ul>
 $error
 </ul>
-Please look at the <a href="$base_url/conference.pl">schedule</a> and try again.
+Please look at the <a href="$base_url/$script">schedule</a> and try again.
 </body></html>
 ENDHTML5
 	}
@@ -331,23 +343,15 @@ print <<ENDHTML6;
 <body bgcolor=#FFFFFF>
 <h2>Delete a reservation from $weekday, $month_txt $mday, $year</h2>
 Choose from this list:<hr>
-<form method=post action="$base_url/conference.pl?delete2&$mon\_$mday\_$year">
+<form method=post action="$base_url/$script?delete2&$mon\_$mday\_$year">
 ENDHTML6
 
 open (DATAFILE, "$datafile");
 @reservations=<DATAFILE>;
 close DATAFILE;
 
-while(@reservations){
-$next=@reservations[0];
-push (@unique,$next);
-($id,@stuff)=split(/~~/,$next);
-@reservations=grep(!/^$id~/,@reservations);
-	} # End while
-	#  @unique should now be just one entry per meeting.
-
-foreach $line(@unique){
-($id,$title,$start,$end,$name,$con_room,$descrip,$con_time,$con_month,$con_day,$con_year)=split(/~~/,$line);
+foreach $line(@reservations){
+($id,$title,$start,$end,$name,$con_room,$descrip,$con_month,$con_day,$con_year)=split(/~~/,$line);
 if ($mon==$con_month && $mday==$con_day && $year==$con_year){
 print "<input type=checkbox name=\"$id\">";
 print "$title (@times[$start] - @times[$end] in @rooms[$con_room])<br>\n";
@@ -378,6 +382,8 @@ close DATAFILE;
 
 for $key (keys %FORM)	{
 @reservations=grep(!/^$key~/,@reservations);
+# Everything that does NOT start with that id#
+# Less efficient for large numbers of deletes ...
 	}
 
 open (DATAFILE, ">$datafile");
@@ -390,7 +396,7 @@ print <<ENDHTML7;
 <head><title>Entries deleted</title></head>
 <body bgcolor=#FFFFFF>
 The entries that you selected have been deleted.<hr>
-<center><a href="$base_url/conference.pl?display&$mon\_$mday\_$year">Schedule for $weekday, $month_txt $mday, $year</a></center><br>
+<center><a href="$base_url/$script?display&$mon\_$mday\_$year">Schedule for $weekday, $month_txt $mday, $year</a></center><br>
 ENDHTML7
 &toolbar;
 print "</body></html>\n";
@@ -410,23 +416,15 @@ print <<ENDHTML8;
 <body bgcolor=#FFFFFF>
 <h2>Edit a reservation for $weekday, $month_txt $mday, $year</h2>
 Choose from this list:<hr>
-<form method=post action="$base_url/conference.pl?edit2">
+<form method=post action="$base_url/$script?edit2">
 ENDHTML8
 
 open (DATAFILE, "$datafile");
 @reservations=<DATAFILE>;
 close DATAFILE;
 
-while(@reservations){
-$next=@reservations[0];
-push (@unique,$next);
-($id,@stuff)=split(/~~/,$next);
-@reservations=grep(!/^$id~/,@reservations);
-	} # End while
-	#  @unique should now be just one entry per meeting.
-
-foreach $line(@unique){
-($id,$title,$start,$end,$name,$con_room,$descrip,$con_time,$con_month,$con_day,$con_year)=split(/~~/,$line);
+foreach $line(@reservations){
+($id,$title,$start,$end,$name,$con_room,$descrip,$con_month,$con_day,$con_year)=split(/~~/,$line);
 if ($mon==$con_month && $mday==$con_day && $year==$con_year){
 print "<input type=radio name=\"ID\" value=\"$id\">";
 print "$title (@times[$start] - @times[$end] in @rooms[$con_room])<br>\n";
@@ -450,7 +448,7 @@ close DATAFILE;
 @reservations=grep(/^$edit_id~/,@reservations);
 #  Get rid of all the stuff that is not the right one.
 
-($id,$title,$start,$end,$contact,$room,$descrip,$time,$mon,$mday,$year)=split(/~~/,@reservations[0]);
+($id,$title,$start,$end,$contact,$room,$descrip,$mon,$mday,$year)=split(/~~/,@reservations[0]);
 ($name,$email)=split(/&&/,$contact);
 $descrip=~s/<br>/\n/;
 
@@ -459,13 +457,13 @@ print <<ENDHTML9;
 <body bgcolor=#FFFFFF>
 <h2>Edit reservation - $title</h2>
 Please correct the fields below:<br>
-<form method=post action=conference.pl?edit3>
+<form method=post action=$script?edit3>
 <input type=hidden name="id" value="$id">
 <b>Title of meeting</b>: 
 <input size=35 name="title" value="$title"><br>
 This will be visible on the schedule, so make it short and descriptive (<i>customer training</i>, <i>IMTC conf. call</i>, <i>neT.120 design meeting</i>, etc)<br>
 <b>Description of the meeting</b> - You may list required materials, agenda items, etc.  You may put HTML markup in this field.<br>
-<textarea name="descrip" cols=60 rows=4>$descrip</textarea><br>
+<textarea name="descrip" cols=60 wrap=virtual rows=4>$descrip</textarea><br>
 <p>
 <b>Date</b>: (month/day/year) <input name="month" size=2 value="$mon"> / <input name="day" size=2 value="$mday"> / <input name="year" size=4 value="$year"> <br>
 ENDHTML9
@@ -532,8 +530,8 @@ close DATAFILE;
 
 $conflict="no";
 foreach $reservation (@reservations)	{
-($conf_id,$title,$start,$end,$name,$room,$descrip,$time,$month,$day,$year)=split(/~~/,$reservation);
-if ($room==$FORM{'room'} && $month==$FORM{'month'} && $day==$FORM{'day'} && $year==$FORM{'year'} && $time==$FORM{'start'}) {$conflict="yes"}; # end if
+($conf_id,$title,$start,$end,$name,$room,$descrip,$month,$day,$year)=split(/~~/,$reservation);
+if ($room==$FORM{'room'} && $month==$FORM{'month'} && $day==$FORM{'day'} && $year==$FORM{'year'} && ( ($FORM{'start'}>=$start && $FORM{'start'}<=$end) || ($FORM{'end'}>=$start && $FORM{'end'}<=$end))) {$conflict="yes"}; # end if
 	}  # end foreach
 if ($conflict eq "yes")	{
 		$error.="<li>There is a conflict with another meeting.";
@@ -552,11 +550,9 @@ $FORM{'descrip'}=~s/\r//g;
 
 open (DATAFILE, ">>$datafile");
 
-for ($time=$FORM{'start'};$time<$FORM{'end'};$time++)	{
 # Make reservation string
-$reservation="$id~~$FORM{'title'}~~$FORM{'start'}~~$FORM{'end'}~~$FORM{'name'}&&$FORM{'email'}~~$FORM{'room'}~~$FORM{'descrip'}~~$time~~$FORM{'month'}~~$FORM{'day'}~~$FORM{'year'}";
+$reservation="$id~~$FORM{'title'}~~$FORM{'start'}~~$FORM{'end'}~~$FORM{'name'}&&$FORM{'email'}~~$FORM{'room'}~~$FORM{'descrip'}~~$FORM{'month'}~~$FORM{'day'}~~$FORM{'year'}";
 print DATAFILE "$reservation\n";
-	}	#  end for $time
 close DATAFILE;
 
 #  Print attractive HTML stuff
@@ -564,7 +560,7 @@ $mon=$FORM{'month'};$mday=$FORM{'day'};$year=$FORM{'year'};
 &weekday;&month_txt($mon);
 print <<ATTRACTIVE;
 The reservation has been changed.<br>
-<center><a href="$base_url/conference.pl?display&$FORM{'month'}\_$FORM{'day'}\_$FORM{'year'}">Schedule for $weekday, $month_txt $FORM{'day'}, $FORM{'year'}</a></center><br>
+<center><a href="$base_url/$script?display&$FORM{'month'}\_$FORM{'day'}\_$FORM{'year'}">Schedule for $weekday, $month_txt $FORM{'day'}, $FORM{'year'}</a></center><br>
 ATTRACTIVE
 
 &toolbar;
@@ -637,12 +633,12 @@ $weekday = $day[($y+int($y/4)-int($y/100)+int($y/400)+$d[$m-1]+$d) % 7];
 }	# End weekday
 
 sub toolbar{
-print "<center>[ <a href=\"$base_url/conference.pl\">Today's Schedule</a>\n";
+print "<center>[ <a href=\"$base_url/$script\">Today's Schedule</a>\n";
 for $link(@links){
 ($link_url,$link_name)=split(/~~/,$link);
 print" | <a href=\"$link_url\">$link_name</a>\n";}
 print" ]</center><br>\n";
-print "Please direct questions and suggestions regarding this application to <a href=\"mailto:rbowen\@databeam.com\">Rich Bowen</a>.";
+print "Please direct questions and suggestions regarding this application to <a href=\"mailto:rbowen\@rcbowen.com\">Rich Bowen</a>.";
 } #  end toolbar
 
 #  form_parse:  Reads in the form information from a post and

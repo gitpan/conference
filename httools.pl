@@ -85,7 +85,7 @@ sub date	{
 sub todayjulean	{
 
 	&date;
-	&julean ($month,$day,$year);
+	&julean ($month,$no,$year);
 	$today = $jule;
 		}
 
